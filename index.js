@@ -2,8 +2,6 @@ require ("dotenv").config();
 
 const express = require("express");
 const path = require("path");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 const routes = require("./routes/routes");
 const connectToDb = require("./database/db");
