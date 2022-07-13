@@ -7,6 +7,15 @@ const publicRoute = (req, res) => {
     res.status(200).json({ msg: "Bem vindo a API" });
 };
 
+const privateRoute = async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findById(id, "-password");
+    if (!user) {
+        return res.status(404).json({ msg: "Usuário não encontrado!" });
+    }
+    res.status(200).json({ user });
+};
+
 const authRegister = async (req, res) => {
     const { name, email, password, confirmpassword } = req.body;
     if (!name) {
@@ -33,7 +42,37 @@ const authRegister = async (req, res) => {
     });
     try {
         await user.save();
-        res.status(201).json({ msg: "Usuário criado com sucesso!" })
+        res.status(201).json({ msg: "Usuário cadastrado com sucesso!" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ msg: "Aconteceu um erro, tente novamente mais tarde!" });
+    }
+};
+
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+    if (!email) {
+        return res.status(422).json({ msg: "O e-mail é obrigatório!" });
+    } else if (!password) {
+        return res.status(422).json({ msg: "A senha é obrigatória!" });
+    }
+    const user = await User.findOne({ email: email });
+    if (!user) {
+        return res.status(404).json({ msg: "Usuário não encontrado!" });
+    }
+    const checkPassword = await bcrypt.compare(password, user.password);
+    if (!checkPassword) {
+        return res.status(422).json({ msg: "Senha incorreta!" });
+    }
+    try {
+        const secret = process.env.SECRET;
+        const token = jwt.sign(
+            {
+                id: user._id
+            },
+            secret,
+        );
+        res.status(200).json({ msg: "Autenticação realizada com sucesso!", token });
     } catch (error) {
         console.log(error);
         res.status(500).json({ msg: "Aconteceu um erro, tente novamente mais tarde!" });
@@ -42,5 +81,7 @@ const authRegister = async (req, res) => {
 
 module.exports = {
     publicRoute,
-    authRegister
+    privateRoute,
+    authRegister,
+    loginUser
 };
