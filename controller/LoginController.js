@@ -19,8 +19,18 @@ function checkToken(req, res, next) {
 }
 
 const publicRoute = (req, res) => {
-    //return res.render("index");
-    res.status(200).json({ msg: "Bem vindo a API" });
+    return res.render("index");
+    //res.status(200).json({ msg: "Bem vindo a API" });
+};
+
+const loginRoute = (req, res) => {
+    return res.render("login");
+    //res.status(200).json({ msg: "Bem vindo a API" });
+};
+
+const registerRoute = (req, res) => {
+    return res.render("register");
+    //res.status(200).json({ msg: "Bem vindo a API" });
 };
 
 const privateRoute = async (req, res) => {
@@ -59,6 +69,7 @@ const authRegister = async (req, res) => {
     try {
         await user.save();
         res.status(201).json({ msg: "Usuário cadastrado com sucesso!" });
+        //return res.redirect("/");
     } catch (error) {
         console.log(error);
         res.status(500).json({ msg: "Aconteceu um erro, tente novamente mais tarde!" });
@@ -69,12 +80,12 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
     if (!email) {
         return res.status(422).json({ msg: "O e-mail é obrigatório!" });
-    } else if (!password) {
-        return res.status(422).json({ msg: "A senha é obrigatória!" });
     }
     const user = await User.findOne({ email: email });
     if (!user) {
         return res.status(404).json({ msg: "Usuário não encontrado!" });
+    } else if (!password) {
+        return res.status(422).json({ msg: "A senha é obrigatória!" });
     }
     const checkPassword = await bcrypt.compare(password, user.password);
     if (!checkPassword) {
@@ -98,6 +109,8 @@ const loginUser = async (req, res) => {
 module.exports = {
     checkToken,
     publicRoute,
+    registerRoute,
+    loginRoute,
     privateRoute,
     authRegister,
     loginUser
