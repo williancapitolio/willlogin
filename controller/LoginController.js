@@ -99,9 +99,12 @@ const loginUser = async (req, res) => {
                 id: user._id
             },
             secret,
+            {
+                expiresIn: 300 // expires in 5min
+            }
         );
-        //res.status(200).json({ msg: "Autenticação realizada com sucesso!", token });
-        return res.redirect("/");
+        res.status(200).json({ msg: "Autenticação realizada com sucesso!", auth: true, token });
+        //return res.redirect("/");
     } catch (error) {
         console.log(error);
         res.status(500).json({ msg: "Aconteceu um erro, tente novamente mais tarde!" });
