@@ -2,23 +2,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-function checkToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(" ")[1];
-    if (!token) {
-        return res.status(414).json({ msg: "Acesso negado!" });
-    }
-    try {
-        const secret = process.env.SECRET;
-        jwt.verify(token, secret);
-        //localStorage.setItem('userData', JSON.stringify(token));
-        next();
-    } catch (error) {
-        console.log(error);
-        res.status(400).json({ msg: "Token inválido!" });
-    }
-};
-
 const publicRoute = (req, res) => {
     return res.render("index");
     //res.status(200).json({ msg: "Bem vindo a API" });
@@ -40,7 +23,7 @@ const privateRoute = async (req, res) => {
     if (!user) {
         return res.status(404).json({ msg: "Usuário não encontrado!" });
     }
-    res.status(200).json({ user });
+    res.status(200).json({ user, userLogged: req.User });
 };
 
 const authRegister = async (req, res) => {
@@ -100,11 +83,13 @@ const loginUser = async (req, res) => {
             },
             secret,
             {
-                expiresIn: 300 // expires in 5min
+                //expiresIn: "1800s" // expires in 30min
+                //expiresIn: "600s" // expires in 10min
+                expiresIn: "60s" // expires in 1min
             }
         );
-        //res.status(200).json({ msg: "Autenticação realizada com sucesso!", auth: true, token });
-        return res.redirect("/");
+        res.status(200).json({ msg: "Autenticação realizada com sucesso!", auth: true, token });
+        //return res.redirect("/");
     } catch (error) {
         console.log(error);
         res.status(500).json({ msg: "Aconteceu um erro, tente novamente mais tarde!" });
@@ -112,7 +97,6 @@ const loginUser = async (req, res) => {
 };
 
 module.exports = {
-    checkToken,
     publicRoute,
     registerRoute,
     loginRoute,
